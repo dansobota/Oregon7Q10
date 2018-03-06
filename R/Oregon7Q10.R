@@ -2,7 +2,11 @@
 #'
 #' This function returns the lowest seven-day average discharge expected once every 10 years
 #' based on a continuous record of data.  The 7Q10 can reflect an annual, seasonal, or monthly
-#' statistic.
+#' statistic. Values from three methods are returned: USGS, EPA, and PearsonDS
+#' References:
+#' https://www.epa.gov/waterdata/dflow
+#' https://nepis.epa.gov/Exe/ZyPDF.cgi/30001JEH.PDF?Dockey=30001JEH.PD
+#' http://deq1.bse.vt.edu/sifnwiki/index.php/Multiple_ways_to_calculate_7Q10
 #' @param station Oregon Water Resources Divison (http://apps.wrd.state.or.us/apps/sw/hydro_near_real_time/) Station ID number
 #' @param start Start date, in the format of "mm/dd/yyyy", for the period of calculation
 #' @param end End date, in the format of "mm/dd/yyyy", for the period of calculation
@@ -15,7 +19,7 @@
 
 # Load required packages----
 require(PearsonDS)
-require(tidyverse)
+require(dplyr)
 
 Oregon7Q10 <- function(station, start, end, period) {
               # Scan in data from http://apps.wrd.state.or.us/apps/sw/hydro_near_real_time/
@@ -32,7 +36,47 @@ Oregon7Q10 <- function(station, start, end, period) {
               header.ln <- grep("station_nbr", flow)
 
               # Column header names, split on "\t", create char vect, then get rid of spaces
-              header.nm<-gsub("(^+ )|( +$)", "", do.call(cbind,strsplit(UY.flow[header.ln], split="\t")))
+              header.nm<-gsub("(^+ )|( +$)", "", do.call(cbind,strsplit(flow[header.ln], split="\t")))
               header.nm<-gsub("^\\s+|\\s+$", "", header.nm)
               header.nm<-gsub("<pre>", "", header.nm)
+
+              # Grab numeric data
+              num.1st <- header.ln + min(grep("^.*[0-9]",
+                                              flow[header.ln + 1:length(flow)]))
+
+              flow.data <- flow[num.1st:length(flow)]
+
+              flow.list <- list()
+
+              # Seperate data on at least two spaces then create data frame using rbind
+              for (y in 1:length(flow.data)) {
+                flow.list[[y]] <- as.data.frame(strsplit(flow.data[y], split = "\t"))
+                names(flow.list[[y]]) <- y
+                flow.list[[y]] <- t(flow.list[[y]])
+              }
+
+              # Set blank data frame
+              flow.df <- data.frame(stringsAsFactors = F)
+
+              # Build dataframe with rbind fill so that empty cells don't repeat
+              for (z in 1:length(flow.list)) {
+                flow.df <- bind_rows(flow.df, as.data.frame(flow.list[[z]],
+                                                        stringsAsFactors = F))
+              }
+
+              # Give columns the appropriate names
+              names(flow.df) <- header.nm
+
+              # format data columns
+              flow.df$mean_daily_flow_cfs <- as.numeric(flow.df$mean_daily_flow_cfs)
+
+              # Assign data frame to package environment
+              assign("flow.data.frame", flow.df, environ = package:Oregon7Q10)
+
+              # Calculation of 7Q10 with PearsonDS method----
+              # From Virgina DEQ (http://deq1.bse.vt.edu/sifnwiki/index.php/Multiple_ways_to_calculate_7Q10)
+              pars <- PearsonDS:::pearsonIIIfitML(log(flow.df$mean_daily_flow_cfs[!is.na(flow.df$mean_daily_flow_cfs)]))
+              x7q10 <- exp(qpearsonIII(0.1, params = pars$par)) # 7Q10
+              assign("PearsonDS.7q10", x7q10, environ = package:Oregon7Q10)
+              print(paste("PearsonDS Method =", x7q10))
 }
