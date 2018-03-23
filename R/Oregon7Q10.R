@@ -10,9 +10,12 @@
 #' @param station Oregon Water Resources Divison (http://apps.wrd.state.or.us/apps/sw/hydro_near_real_time/) Station ID number
 #' @param start Start date, in the format of "mm/dd/yyyy", for the period of calculation
 #' @param end End date, in the format of "mm/dd/yyyy", for the period of calculation
-#' @param period The temporal scale for the 7Q10 calculation, can be "A" for annual, "Spring" for 21 March to 20 June, "Summer" for 21 June to 20 September, "Fall" for 21 September to 20 December, "Winter" for 21 December to 20 March, or the specific month.
+#' @param period The temporal scale for the 7Q10 calculation, can be "Annual", "Spring" for 21 March to 20 June, "Summer" for 21 June to 20 September, "Fall" for 21 September to 20 December, "Winter" for 21 December to 20 March, or the specific month. Default is "Annual".
+#' @param wy.start Optional. The water year beginning date (excluding year). The date should be in character format "mm-dd". If not specified the default is "10-01". Only applicable for annual periods.
+#' @param methodtype Method for calculating 7Q10. Options are "USGS", "EPA", "PearsonDS", or "All" for comparison purposes.  Default is "EPA".
 #' @keywords 7Q10
 #' @keywords Flow
+#' @keywords Oregon
 #' @export
 #' @examples
 #' Oregon7Q10()
@@ -21,7 +24,7 @@
 require(PearsonDS)
 require(dplyr)
 
-Oregon7Q10 <- function(station, start, end, period) {
+Oregon7Q10 <- function(station, start, end, period = "Annual", wy.start = "10-01", methodtype = "EPA") {
               # Scan in data from http://apps.wrd.state.or.us/apps/sw/hydro_near_real_time/
               flow <- scan(paste0("http://apps.wrd.state.or.us/apps/sw/hydro_near_real_time/hydro_download.aspx?station_nbr=",
                                    station,
@@ -68,10 +71,21 @@ Oregon7Q10 <- function(station, start, end, period) {
               names(flow.df) <- header.nm
 
               # format data columns
+              flow.df$record_date <- as.POSIXct(flow.df$record_date, format = "%m-%d-%Y", tz = "America/Los_Angeles")
               flow.df$mean_daily_flow_cfs <- as.numeric(flow.df$mean_daily_flow_cfs)
+
+              if (period == "Annual") {
+                flow.df <- flow.df
+              } else {
+                if (period == "")
+              }
 
               # Assign data frame to package environment
               assign("flow.data.frame", flow.df, environ = package:Oregon7Q10)
+
+              # Calculation of 7Q10 with USGS method----
+
+              # Calculation of with EPA method----
 
               # Calculation of 7Q10 with PearsonDS method----
               # From Virgina DEQ (http://deq1.bse.vt.edu/sifnwiki/index.php/Multiple_ways_to_calculate_7Q10)
