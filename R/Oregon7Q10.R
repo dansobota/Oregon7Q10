@@ -12,7 +12,7 @@
 #' @param end End date, in the format of "mm/dd/yyyy", for the period of calculation
 #' @param period The temporal scale for the 7Q10 calculation, can be "Annual", "Spring" for 21 March to 20 June, "Summer" for 21 June to 20 September, "Fall" for 21 September to 20 December, "Winter" for 21 December to 20 March, or the specific month. Default is "Annual".
 #' @param wy.start Optional. The water year beginning date (excluding year). The date should be in character format "mm-dd". If not specified the default is "10-01". Only applicable for annual periods.
-#' @param methodtype Method for calculating 7Q10. Options are "USGS", "EPA", "PearsonDS", or "All" for comparison purposes.  Default is "EPA".
+#' @param methodtype Method for calculating 7Q10. Options are "USGS", "EPA", "PearsonDS", or "All".  Default is "EPA".
 #' @keywords 7Q10
 #' @keywords Flow
 #' @keywords Oregon
@@ -25,6 +25,20 @@ require(PearsonDS)
 require(dplyr)
 
 Oregon7Q10 <- function(station, start, end, period = "Annual", wy.start = "10-01", methodtype = "EPA") {
+              # QA/QC check
+              # Checking station number length and format
+              if (nchar(station) != 8) {
+              print("Error: please enter a valid station ID")
+              }
+
+              station <- sprintf("%08d", as.integer(station))
+
+
+
+              if (as.POSIXct(start, format = "%m/%d/%Y") > as.POSIXct(end, format = "%m/%d/%Y")) {
+                print("Error: please enter valid start and end dates")
+              }
+
               # Scan in data from http://apps.wrd.state.or.us/apps/sw/hydro_near_real_time/
               flow <- scan(paste0("http://apps.wrd.state.or.us/apps/sw/hydro_near_real_time/hydro_download.aspx?station_nbr=",
                                    station,
@@ -77,7 +91,9 @@ Oregon7Q10 <- function(station, start, end, period = "Annual", wy.start = "10-01
               if (period == "Annual") {
                 flow.df <- flow.df
               } else {
-                if (period == "")
+                if (period == "Spring") {
+                  flow.df <- flow.df[format.Date(flow.df$record_date, "%m")]
+                }
               }
 
               # Assign data frame to package environment
