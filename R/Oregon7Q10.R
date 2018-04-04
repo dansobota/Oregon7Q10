@@ -26,6 +26,7 @@
 # Load required packages----
 require(PearsonDS)
 require(dplyr)
+require(zoo)
 
 Oregon7Q10 <- function(Station_ID, start_date, end_date, period = "Annual", custom_start = NA, custom_end = NA, wy_start = "10-01") {
 
@@ -146,33 +147,51 @@ Oregon7Q10 <- function(Station_ID, start_date, end_date, period = "Annual", cust
               # which will be assigned by the year in which the majority of the data occur
 
               if (period == "Custom" | period == "custom") {
-                if (custom_start.nm < custom_end.nm) {
-                  flow.df$wy.year <- as.integer(format.Date(flow.df$record_date, "%Y"))
-                }
+                flow.df$wy.year <- ifelse(as.integer(paste0(format.Date(flow.df$record_date, "%Y"))) >
+                                            as.integer(gsub("-", "", start_date)),
+                                          as.integer(format.Date(flow.df$record_date, "%Y")),
+                                          as.integer(format.Date(flow.df$record_date, "%Y")) - 1)
               }
 
               if (period =="Annual" | period == "annual") {
 
+                if (as.integer(gsub("-", "", wy_start)) >= 621) { # Using the approximate day of the summer solstice as the hydrologic break point
 
-                  flow.df$wy.year <- ifelse(as.integer(paste0(format.Date(flow.df$record_date, "%m"),
-                                                              format.Date(flow.df$record_date, "%d"))) >= 621, # Using the approximate day of the summer solstice as the hydrologic break point
-
-                                            # After the start of summer
-                                            ifelse(as.integer(paste0(format.Date(flow.df$record_date, "%m"),
+                        # After the start of summer
+                        flow.df$wy.year <- ifelse(as.integer(paste0(format.Date(flow.df$record_date, "%m"),
                                                                      format.Date(flow.df$record_date, "%d"))) >= as.integer(gsub("-", "", wy_start)),
                                                    as.integer(format.Date(flow.df$record_date, "%Y")) + 1,
-                                                   as.integer(format.Date(flow.df$record_date, "%Y"))),
-
-                                            # Before the start of summer
-                                            ifelse(as.integer(paste0(format.Date(flow.df$record_date, "%m"),
+                                                   as.integer(format.Date(flow.df$record_date, "%Y")))
+                  } else {
+                        # Before the start of summer
+                        flow.df$wy.year <- ifelse(as.integer(paste0(format.Date(flow.df$record_date, "%m"),
                                                                     format.Date(flow.df$record_date, "%d"))) >= as.integer(gsub("-", "", wy_start)),
                                                   as.integer(format.Date(flow.df$record_date, "%Y")),
-                                                  as.integer(format.Date(flow.df$record_date, "%Y")) - 1))
+                                                  as.integer(format.Date(flow.df$record_date, "%Y")) - 1)
+                  }
+
+              }
+
+
+
+              # Calculation of 7-day average flow for entire period
+              # Note: 7-day average daily flows
+              flow.df$day.7.mean <- zoo::rollapply(zoo::zoo(flow.df$mean_daily_flow_cfs), 7, mean, na.rm = T, fill = NA, align = "right")
+
 
               # Assign data frame to package environment
               assign("flow.data.frame", flow.df, environ = package:Oregon7Q10)
 
-              # Calculation of 7Q10 with EPA method for DFLOW----
+              # Calculation of 7Q10 with EPA methods for DFLOW----
               # Source: https://nepis.epa.gov/Exe/ZyPDF.cgi?Dockey=P100BK6P.txt
+
+
+              # Distribution-free method
+
+
+              # Pearson Type III method
+
+
+
 
 }
