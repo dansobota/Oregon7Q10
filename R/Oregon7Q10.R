@@ -2,7 +2,8 @@
 #'
 #' This function returns the lowest seven-day average discharge expected once every 10 years
 #' based on a continuous record of data.  The 7Q10 can reflect an annual, seasonal, or monthly
-#' statistic. Methods are consistent with the EPA's DFLOW methods.
+#' statistic. Methods are consistent with the EPA's DFLOW methods.  Also included is a function,
+#' OWRD_stations, that links you to the Oregon Water Resources website to browse station IDs.
 #' References:
 #' https://www.epa.gov/waterdata/dflow
 #' https://nepis.epa.gov/Exe/ZyPDF.cgi/30001JEH.PDF?Dockey=30001JEH.PD
@@ -21,13 +22,19 @@
 #' @keywords Oregon
 #' @export
 #' @examples
-#' Oregon7Q10()
+#' OWRD_stations()
+#' Oregon7Q10(Station_ID, start_date, end_date, period = "Annual", custom_start = NA, custom_end = NA, wy_start = "10-01")
 
 # Load required packages----
 require(PearsonDS)
 require(dplyr)
 require(zoo)
+require(magrittr)
 
+# Function to open Oregon Water Resources to browse for Station_ID
+OWRD_stations <- function() (browseURL("https://apps.wrd.state.or.us/apps/sw/hydro_near_real_time/"))
+
+#
 Oregon7Q10 <- function(Station_ID, start_date, end_date, period = "Annual", custom_start = NA, custom_end = NA, wy_start = "10-01") {
 
               # Check to see if station format is valid
@@ -185,9 +192,38 @@ Oregon7Q10 <- function(Station_ID, start_date, end_date, period = "Annual", cust
               # Calculation of 7Q10 with EPA methods for DFLOW----
               # Source: https://nepis.epa.gov/Exe/ZyPDF.cgi?Dockey=P100BK6P.txt
 
-
               # Distribution-free method
 
+              # The expression for xQy is:
+
+              # xQy = (1-e) X(ml) + eX(m2)
+
+              # where:
+              # X(m) = the m-th lowest annual low flow of record
+              # ml = [(n+1)/y]
+              # m2 = [(n+l)/y] + 1
+              # [z] = the largest integer less than or equal to z
+              # e = (n+l)/y - [(n+l)/y]
+              # This method is only appropriate when the desired return period is less than n/5 years
+
+              # First exclude incomplete years and years with >10% NAs
+
+              # Get length of period by water year
+              if (period == "Annual" | period == "annual") {
+                wy.length <- 365
+              } else {
+                # After the start of summer
+                flow.df$wy.year <- ifelse(as.integer(paste0(format.Date(flow.df$record_date, "%m"),
+                                                            format.Date(flow.df$record_date, "%d"))) >= as.integer(gsub("-", "", wy_start)),
+                                          as.integer(format.Date(flow.df$record_date, "%Y")) + 1,
+                                          as.integer(format.Date(flow.df$record_date, "%Y")))
+                }
+              }
+
+
+              flow.df %>%
+                dplyr::group_by(wy.year) %>%
+                  dplyr::summarise(no_rows = length(wy.year))
 
               # Pearson Type III method
 
