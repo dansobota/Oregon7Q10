@@ -213,9 +213,9 @@ Oregon7Q10 <- function(Station_ID, start_date, end_date, period = "Annual", cust
                 wy.length <- 365
               } else {
                 # After the start of summer
-                flow.df$wy.year <- ifelse(as.integer(paste0(format.Date(flow.df$record_date, "%m"),
-                                                            format.Date(flow.df$record_date, "%d"))) >= as.integer(gsub("-", "", wy_start)),
-                                          as.integer(format.Date(flow.df$record_date, "%Y")) + 1,
+                wy.length <- ifelse(as.integer(paste0(format.Date(flow.df$record_date, "%m"),
+                                                            format.Date(flow.df$record_date, "%d"))) >= as.integer(gsub("-", "", custom_start)),
+                                          ,
                                           as.integer(format.Date(flow.df$record_date, "%Y")))
                 }
               }
