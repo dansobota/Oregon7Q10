@@ -30,11 +30,12 @@ require(PearsonDS)
 require(dplyr)
 require(zoo)
 require(magrittr)
+require(purrr)
 
 # Function to open Oregon Water Resources to browse for Station_ID
 OWRD_stations <- function() (browseURL("https://apps.wrd.state.or.us/apps/sw/hydro_near_real_time/"))
 
-#
+# Function to get 7Q10
 Oregon7Q10 <- function(Station_ID, start_date, end_date, period = "Annual", custom_start = NA, custom_end = NA, wy_start = "10-01") {
 
               # Check to see if station format is valid
@@ -179,12 +180,9 @@ Oregon7Q10 <- function(Station_ID, start_date, end_date, period = "Annual", cust
 
               }
 
-
-
               # Calculation of 7-day average flow for entire period
               # Note: 7-day average daily flows
-              flow.df$day.7.mean <- zoo::rollapply(zoo::zoo(flow.df$mean_daily_flow_cfs), 7, mean, na.rm = T, fill = NA, align = "right")
-
+              flow.df$day.7.mean <- zoo::rollapply(zoo::zoo(flow.df$mean_daily_flow_cfs), 7, mean, na.rm = F, fill = NA, align = "right")
 
               # Assign data frame to package environment
               assign("flow.data.frame", flow.df, environ = package:Oregon7Q10)
@@ -212,22 +210,41 @@ Oregon7Q10 <- function(Station_ID, start_date, end_date, period = "Annual", cust
               if (period == "Annual" | period == "annual") {
                 wy.length <- 365
               } else {
-                # After the start of summer
-                wy.length <- ifelse(as.integer(paste0(format.Date(flow.df$record_date, "%m"),
-                                                            format.Date(flow.df$record_date, "%d"))) >= as.integer(gsub("-", "", custom_start)),
-                                          ,
-                                          as.integer(format.Date(flow.df$record_date, "%Y")))
+                if (as.integer(gsub("-", "", custom_start) > as.integer(gsub("-", "", custom_end)))) {
+                  # Using non-leap years 1998 and 1999 for intervals
+                    wy.length <- as.integer(as.Date(paste0(custom_end, "-1999"), format = "%m-%d-%Y") - as.Date(paste0(custom_start, "-1998"), format = "%m-%d-%Y"))
+                } else {
+                   wy.length <- as.integer(as.Date(paste0(custom_start, "-1999"), format = "%m-%d-%Y") - as.Date(paste0(custom_end, "-1999"), format = "%m-%d-%Y"))
                 }
               }
 
 
+              # Getting the number of days in each water year queried
               flow.df %>%
                 dplyr::group_by(wy.year) %>%
-                  dplyr::summarise(no_rows = length(wy.year))
+                  dplyr::summarise(no_rows = length(wy.year)) -> obs.wy.length
+
+              # Getting an index to evaluate completeness of rows
+              obs.wy.length$wy.ratio <- obs.wy.length$no_rows / wy.length
+
+              # Get number of days with NA values for 7-day average flow
+              flow.df %>%
+                dplyr::group_by(wy.year) %>%
+                  dplyr::summarise(no_rows = sum(is.na(day.7.mean))) -> obs.na.length
+
+              # Getting percent of NAs
+              obs.na.length$per_NAs <- obs.na.length$no_rows / obs.wy.length$no_rows
+
+              # Getting final data frame and excluding water years with incomplete year coverage or >10% NAs for 7-day average flows
+              list(flow.df, subset(obs.wy.length, select = -no_rows), select(obs.na.length, select= -no_rows)) %>%
+               purrr::reduce(dplyr::left_join, by = "wy.year") %>%
+                  subset(wy.ratio >= 1 & per_NAs <= 0.1) -> flow.df.final
+
+              # Calculate minimum flow for each water year
+              flow.df.final %>%
+                dplyr::group_by(wy.year) %>%
+                  dplyr::summarise(min_7Q = min(day.7.mean, na.rm = T)) -> min.flow.wy
 
               # Pearson Type III method
-
-
-
-
 }
+
