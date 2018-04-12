@@ -12,10 +12,11 @@
 #' @param Station_ID Oregon Water Resources Divison (http://apps.wrd.state.or.us/apps/sw/hydro_near_real_time/) Station ID number
 #' @param start_date Start date, in the format of "mm/dd/yyyy", for the period of calculation
 #' @param end_date End date, in the format of "mm/dd/yyyy", for the period of calculation
-#' @param period The temporal scale for the 7Q10 calculation, can be "Annual" or "Custom". Default is "Annual".
-#' @param custom_start If "Custom" is designated as the period, the start date (excluding year) of the custom period in the character format of "mm-dd".
-#' @param custom_end If "Custom" is designated as the period, the end date (excluding year) of the custom period in the character format of "mm-dd".
-#' @param wy_start Only applicable for the "Annual" period. The water year beginning date (excluding year). The date should be in the character format of "mm-dd". If not specified the default is "10-01".
+#' @param period The temporal scale for the 7Q10 calculation, can be "Annual" or "Custom". Default is "Annual"
+#' @param custom_start If "Custom" is designated as the period, the start date (excluding year) of the custom period in the character format of "mm-dd"
+#' @param custom_end If "Custom" is designated as the period, the end date (excluding year) of the custom period in the character format of "mm-dd"
+#' @param wy_start Only applicable for the "Annual" period. The water year beginning date (excluding year). The date should be in the character format of "mm-dd". If not specified the default is "10-01"
+#' @param method_type The method used to calculate 7Q10.  Options are "Distribution Free", "log Pearson Type III", or "Both"
 #'
 #' @keywords 7Q10
 #' @keywords Flow
@@ -23,20 +24,15 @@
 #' @export
 #' @examples
 #' OWRD_stations()
-#' Oregon7Q10(Station_ID, start_date, end_date, period = "Annual", custom_start = NA, custom_end = NA, wy_start = "10-01")
+#' Oregon7Q10(Station_ID, start_date, end_date, period = "Annual", custom_start = NA, custom_end = NA, wy_start = "10-01", method_type = "Both")
 
 # Load required packages----
-require(PearsonDS)
-require(dplyr)
-require(zoo)
-require(magrittr)
-require(purrr)
 
 # Function to open Oregon Water Resources to browse for Station_ID
 OWRD_stations <- function() (browseURL("https://apps.wrd.state.or.us/apps/sw/hydro_near_real_time/"))
 
 # Function to get 7Q10
-Oregon7Q10 <- function(Station_ID, start_date, end_date, period = "Annual", custom_start = NA, custom_end = NA, wy_start = "10-01") {
+Oregon7Q10 <- function(Station_ID, start_date, end_date, period = "Annual", custom_start = NA, custom_end = NA, wy_start = "10-01", method_type = "Both") {
 
               # Check to see if station format is valid
               # Note: this is coarse; OWRD does not seem to have a way to output a station list in html for checking directly, which would be ideal
@@ -104,6 +100,12 @@ Oregon7Q10 <- function(Station_ID, start_date, end_date, period = "Annual", cust
               # Check methodtype to make sure it is valid
               if (exists("method_type") == F) {
                 stop("Please enter a type of method for calculating 7Q10")
+              }
+
+              all_methods <- c("Both", "both", "Distribution Free", "distribution free", "log Pearson Type III")
+
+              if (any(method_type == all_methods) == F) {
+                stop("Please enter a valid method type")
               }
 
               # Data processing
@@ -245,6 +247,47 @@ Oregon7Q10 <- function(Station_ID, start_date, end_date, period = "Annual", cust
                 dplyr::group_by(wy.year) %>%
                   dplyr::summarise(min_7Q = min(day.7.mean, na.rm = T)) -> min.flow.wy
 
+              assign("min.flow.data.frame", min.flow.wy, environ = package:Oregon7Q10)
+
+              # Calculation of parameters
+              x <- 7
+              y <- 10
+              m1 <- trunc((length(min.flow.wy$min_7Q) + 1) / y)
+              m2 <- trunc((length(min.flow.wy$min_7Q) + 1) / y) + 1
+              e <- ((length(min.flow.wy$min_7Q) + 1) / y) - trunc((length(min.flow.wy$min_7Q) + 1) / y)
+
+              X1 <- min.flow.wy$min_7Q[rank(min.flow.wy$min_7Q, ties.method = "first") == m1]
+              X2 <- min.flow.wy$min_7Q[rank(min.flow.wy$min_7Q, ties.method = "first") == m2]
+
+              DF7Q10 <- (1 - e) * X1 + e * X2
+
               # Pearson Type III method
+
+              u <- mean(log(min.flow.wy$min_7Q))
+              s <- sd(log(min.flow.wy$min_7Q))
+              g <- moments::skewness(log(min.flow.wy$min_7Q))
+              z <- 4.91 * ((1/y)^0.14 - (1 - 1/y)^0.14)
+
+              K <- (2 / g) * (((1 + (g * z)/6 - (g^2)/36)^3) - 1)
+
+              PT7Q10 <- exp(u + K * s)
+
+              # Put values in package environment
+              assign("Dist.Free.7Q10", DF7Q10, envrion = package:Oregon7Q10)
+              assign("Pearson.Type.III.7Q10", PT7Q10, envrion = package:Oregon7Q10)
+
+              # Print output
+              if (method_type == "Both" | method_type == "both") {
+                print(paste0("Distribution Free 7Q10 (cfs): ", round(DF7Q10, digits = 1)))
+                print(paste0("log Pearson Type III 7Q10 (cfs): ", round(PT7Q10, digits = 1)))
+              }
+
+              if (method_type == "Distribution Free" | "distribution free") {
+                print(paste0("Distribution Free 7Q10 (cfs): ", round(DF7Q10, digits = 1)))
+              }
+
+              if (method_type == "log Pearson Type III") {
+                print(paste0("log Pearson Type III 7Q10 (cfs): ", round(PT7Q10, digits = 1)))
+              }
 }
 
