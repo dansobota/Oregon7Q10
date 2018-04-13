@@ -1,6 +1,6 @@
 #' Oregon 7Q10
 #'
-#' This function returns the lowest seven-day average discharge expected once every 10 years
+#' This package contains a function returns the lowest seven-day average discharge expected once every 10 years
 #' based on a continuous record of data.  The 7Q10 can reflect an annual, seasonal, or monthly
 #' statistic. Methods are consistent with the EPA's DFLOW methods.  Also included is a function,
 #' OWRD_stations, that links you to the Oregon Water Resources website to browse station IDs.
@@ -22,16 +22,12 @@
 #' @keywords Flow
 #' @keywords Oregon
 #' @export
-#' @examples
-#' OWRD_stations()
-#' Oregon7Q10(Station_ID, start_date, end_date, period = "Annual", custom_start = NA, custom_end = NA, wy_start = "10-01", method_type = "Both")
+#' @examples Oregon7Q10(Station_ID, start_date, end_date, period = "Annual", custom_start = NA, custom_end = NA, wy_start = "10-01", method_type = "Both")
 
 # Load required packages----
 
-# Function to open Oregon Water Resources to browse for Station_ID
-OWRD_stations <- function() (browseURL("https://apps.wrd.state.or.us/apps/sw/hydro_near_real_time/"))
-
 # Function to get 7Q10
+#' @export
 Oregon7Q10 <- function(Station_ID, start_date, end_date, period = "Annual", custom_start = NA, custom_end = NA, wy_start = "10-01", method_type = "Both") {
 
               # Check to see if station format is valid
@@ -187,7 +183,7 @@ Oregon7Q10 <- function(Station_ID, start_date, end_date, period = "Annual", cust
               flow.df$day.7.mean <- zoo::rollapply(zoo::zoo(flow.df$mean_daily_flow_cfs), 7, mean, na.rm = F, fill = NA, align = "right")
 
               # Assign data frame to package environment
-              assign("flow.data.frame", flow.df, environ = package:Oregon7Q10)
+              assign("flow.data.frame", flow.df, envir = package:Oregon7Q10)
 
               # Calculation of 7Q10 with EPA methods for DFLOW----
               # Source: https://nepis.epa.gov/Exe/ZyPDF.cgi?Dockey=P100BK6P.txt
@@ -247,7 +243,7 @@ Oregon7Q10 <- function(Station_ID, start_date, end_date, period = "Annual", cust
                 dplyr::group_by(wy.year) %>%
                   dplyr::summarise(min_7Q = min(day.7.mean, na.rm = T)) -> min.flow.wy
 
-              assign("min.flow.data.frame", min.flow.wy, environ = package:Oregon7Q10)
+              assign("min.flow.data.frame", min.flow.wy, envir = package:Oregon7Q10)
 
               # Calculation of parameters
               x <- 7
@@ -273,8 +269,8 @@ Oregon7Q10 <- function(Station_ID, start_date, end_date, period = "Annual", cust
               PT7Q10 <- exp(u + K * s)
 
               # Put values in package environment
-              assign("Dist.Free.7Q10", DF7Q10, envrion = package:Oregon7Q10)
-              assign("Pearson.Type.III.7Q10", PT7Q10, envrion = package:Oregon7Q10)
+              assign("Dist.Free.7Q10", DF7Q10, envir = package:Oregon7Q10)
+              assign("Pearson.Type.III.7Q10", PT7Q10, envir = package:Oregon7Q10)
 
               # Print output
               if (method_type == "Both" | method_type == "both") {
@@ -290,4 +286,3 @@ Oregon7Q10 <- function(Station_ID, start_date, end_date, period = "Annual", cust
                 print(paste0("log Pearson Type III 7Q10 (cfs): ", round(PT7Q10, digits = 1)))
               }
 }
-

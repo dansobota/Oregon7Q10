@@ -2,8 +2,8 @@ Package: Oregon7Q10
 Title: Calculation of 7Q10 flow for gauging stations in Oregon
 Version: 0.0.0.9000
 Authors@R: person("Dan", "Sobota", email = "sobota.daniel@deq.state.or.us", role = c("aut", "cre"))
-Description: This function returns the lowest seven-day average discharge expected once every 10 years based on a continuous record of data.  The 7Q10 can reflect an annual, seasonal, or monthly statistic. Methods are consistent with the EPA's DFLOW methods.  Also included is a function, OWRD_stations, that links you to the Oregon Water Resources website to browse station IDs.
-Depends: R (>= 3.4.3)
+Description: This function returns the lowest seven-day average discharge expected once every 10 years based on a continuous record of data.  The 7Q10 can reflect an annual, seasonal, or monthly statistic. Methods are consistent with the EPA's DFLOW methods.
+Depends: R (>= 3.3.3)
 License: GNU General Public License v3.0
 Encoding: UTF-8
 LazyData: true
@@ -13,3 +13,4 @@ Imports: PearsonDS,
          magrittr,
          purrr,
          moments
+RoxygenNote: 6.0.1
