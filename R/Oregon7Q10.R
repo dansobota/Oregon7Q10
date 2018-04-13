@@ -274,15 +274,15 @@ Oregon7Q10 <- function(Station_ID, start_date, end_date, period = "Annual", cust
 
               # Print output
               if (method_type == "Both" | method_type == "both") {
-                print(paste0("Distribution Free 7Q10 (cfs): ", round(DF7Q10, digits = 1)))
-                print(paste0("log Pearson Type III 7Q10 (cfs): ", round(PT7Q10, digits = 1)))
+                cat(paste0("Distribution Free 7Q10 (cfs): ", round(DF7Q10, digits = 1)))
+                cat(paste0("log Pearson Type III 7Q10 (cfs): ", round(PT7Q10, digits = 1)))
               }
 
               if (method_type == "Distribution Free" | "distribution free") {
-                print(paste0("Distribution Free 7Q10 (cfs): ", round(DF7Q10, digits = 1)))
+                cat(paste0("Distribution Free 7Q10 (cfs): ", round(DF7Q10, digits = 1)))
               }
 
               if (method_type == "log Pearson Type III") {
-                print(paste0("log Pearson Type III 7Q10 (cfs): ", round(PT7Q10, digits = 1)))
+                cat(paste0("log Pearson Type III 7Q10 (cfs): ", round(PT7Q10, digits = 1)))
               }
 }
