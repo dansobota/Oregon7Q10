@@ -183,7 +183,7 @@ Oregon7Q10 <- function(Station_ID, start_date, end_date, period = "Annual", cust
               flow.df$day.7.mean <- zoo::rollapply(zoo::zoo(flow.df$mean_daily_flow_cfs), 7, mean, na.rm = F, fill = NA, align = "right")
 
               # Assign data frame to package environment
-              assign("flow.data.frame", flow.df, envir = package:Oregon7Q10)
+              assign("flow.data.frame", flow.df, envir = .GlobalEnv)
 
               # Calculation of 7Q10 with EPA methods for DFLOW----
               # Source: https://nepis.epa.gov/Exe/ZyPDF.cgi?Dockey=P100BK6P.txt
@@ -243,7 +243,7 @@ Oregon7Q10 <- function(Station_ID, start_date, end_date, period = "Annual", cust
                 dplyr::group_by(wy.year) %>%
                   dplyr::summarise(min_7Q = min(day.7.mean, na.rm = T)) -> min.flow.wy
 
-              assign("min.flow.data.frame", min.flow.wy, envir = package:Oregon7Q10)
+              assign("min.flow.data.frame", min.flow.wy, envir = .GlobalEnv)
 
               # Calculation of parameters
               x <- 7
@@ -269,20 +269,24 @@ Oregon7Q10 <- function(Station_ID, start_date, end_date, period = "Annual", cust
               PT7Q10 <- exp(u + K * s)
 
               # Put values in package environment
-              assign("Dist.Free.7Q10", DF7Q10, envir = package:Oregon7Q10)
-              assign("Pearson.Type.III.7Q10", PT7Q10, envir = package:Oregon7Q10)
+              assign("Dist.Free.7Q10", DF7Q10, envir = .GlobalEnv)
+              assign("Pearson.Type.III.7Q10", PT7Q10, envir = .GlobalEnv)
 
               # Print output
               if (method_type == "Both" | method_type == "both") {
                 cat(paste0("Distribution Free 7Q10 (cfs): ", round(DF7Q10, digits = 1)))
+                cat("\n")
                 cat(paste0("log Pearson Type III 7Q10 (cfs): ", round(PT7Q10, digits = 1)))
+                cat("\n")
               }
 
-              if (method_type == "Distribution Free" | "distribution free") {
+              if (method_type == "Distribution Free" | method_type == "distribution free") {
                 cat(paste0("Distribution Free 7Q10 (cfs): ", round(DF7Q10, digits = 1)))
+                cat("\n")
               }
 
               if (method_type == "log Pearson Type III") {
                 cat(paste0("log Pearson Type III 7Q10 (cfs): ", round(PT7Q10, digits = 1)))
+                cat("\n")
               }
 }
