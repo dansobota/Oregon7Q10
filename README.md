@@ -1,10 +1,9 @@
 # Oregon7Q10
-Functions to calculate 7Q10 statistics in Oregon
+Function to calculate 7Q10 statistics in Oregon
 
 This package contains a function returns the lowest seven-day average discharge expected once every 10 years based on a continuous record of data.  The 7Q10 can reflect an annual, seasonal, or monthly statistic. Methods are consistent with the EPA's DFLOW methods.
 
-References:
-
+## References:
 https://www.epa.gov/waterdata/dflow
 
 https://nepis.epa.gov/Exe/ZyPDF.cgi/30001JEH.PDF?Dockey=30001JEH.PD
@@ -13,8 +12,7 @@ http://deq1.bse.vt.edu/sifnwiki/index.php/Multiple_ways_to_calculate_7Q10
 
 https://github.com/rmichie/DFLOW_R
 
-Parameters:
-
+## Parameters:
 Station_ID: Oregon Water Resources Divison (http://apps.wrd.state.or.us/apps/sw/hydro_near_real_time/) Station ID number
 
 start_date: Start date, in the format of "mm/dd/yyyy", for the period of calculation
@@ -31,8 +29,8 @@ wy_start: Only applicable for the "Annual" period. The water year beginning date
 
 method_type: The method used to calculate 7Q10.  Options are "Distribution Free", "log Pearson Type III", or "Both"
 
-Keywords: 7Q10, Flow, Oregon
+## Keywords:
+7Q10, Flow, Oregon
 
-Example:
-
+## Example:
 Oregon7Q10(Station_ID, start_date, end_date, period = "Annual", custom_start = NA, custom_end = NA, wy_start = "10-01", method_type = "Both")
