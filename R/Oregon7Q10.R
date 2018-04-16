@@ -2,8 +2,7 @@
 #'
 #' This package contains a function returns the lowest seven-day average discharge expected once every 10 years
 #' based on a continuous record of data.  The 7Q10 can reflect an annual, seasonal, or monthly
-#' statistic. Methods are consistent with the EPA's DFLOW methods.  Also included is a function,
-#' OWRD_stations, that links you to the Oregon Water Resources website to browse station IDs.
+#' statistic. Methods are consistent with the EPA's DFLOW methods.
 #' References:
 #' https://www.epa.gov/waterdata/dflow
 #' https://nepis.epa.gov/Exe/ZyPDF.cgi/30001JEH.PDF?Dockey=30001JEH.PD
