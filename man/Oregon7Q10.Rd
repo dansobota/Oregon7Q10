@@ -11,28 +11,32 @@ Oregon7Q10(Station_ID, start_date, end_date, period = "Annual",
 \arguments{
 \item{Station_ID}{Oregon Water Resources Divison (http://apps.wrd.state.or.us/apps/sw/hydro_near_real_time/) Station ID number}
 
-\item{start_date}{Start date, in the format of "mm/dd/yyyy", for the period of calculation}
+\item{start_date}{Start date, in the format of "mm/dd/yyyy", for the period of calculation. Make sure to include the quotations.}
 
-\item{end_date}{End date, in the format of "mm/dd/yyyy", for the period of calculation}
+\item{end_date}{End date, in the format of "mm/dd/yyyy", for the period of calculation. Make sure to include the quotations.}
 
-\item{period}{The temporal scale for the 7Q10 calculation, can be "Annual" or "Custom". Default is "Annual"}
+\item{period}{The temporal scale for the 7Q10 calculation, can be "Annual" or "Custom". Default is "Annual". Make sure to include quotations.}
 
-\item{custom_start}{If "Custom" is designated as the period, the start date (excluding year) of the custom period in the character format of "mm-dd"}
+\item{custom_start}{If "Custom" is designated as the period, the start date (excluding year) of the custom period in the character format of "mm-dd". Make sure to include quotations.}
 
-\item{custom_end}{If "Custom" is designated as the period, the end date (excluding year) of the custom period in the character format of "mm-dd"}
+\item{custom_end}{If "Custom" is designated as the period, the end date (excluding year) of the custom period in the character format of "mm-dd". Make sure to include quotations.}
 
-\item{wy_start}{Only applicable for the "Annual" period. The water year beginning date (excluding year). The date should be in the character format of "mm-dd". If not specified the default is "10-01"}
+\item{wy_start}{Only applicable for the "Annual" period. The water year beginning date (excluding year). The date should be in the character format of "mm-dd". If not specified the default is "10-01". Make sure to include quotations.}
 
-\item{method_type}{The method used to calculate 7Q10.  Options are "Distribution Free", "log Pearson Type III", or "Both"}
+\item{method_type}{The method used to calculate 7Q10.  Options are "Distribution Free", "log Pearson Type III", or "Both". Make sure to include quotations.}
 }
 \description{
 This package contains a function returns the lowest seven-day average discharge expected once every 10 years
 based on a continuous record of data.  The 7Q10 can reflect an annual, seasonal, or monthly
 statistic. Methods are consistent with the EPA's DFLOW methods.
-References:
+}
+\details{
 https://www.epa.gov/waterdata/dflow
+
 https://nepis.epa.gov/Exe/ZyPDF.cgi/30001JEH.PDF?Dockey=30001JEH.PD
+
 http://deq1.bse.vt.edu/sifnwiki/index.php/Multiple_ways_to_calculate_7Q10
+
 https://github.com/rmichie/DFLOW_R
 }
 \examples{

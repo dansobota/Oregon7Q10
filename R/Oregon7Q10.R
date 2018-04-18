@@ -3,20 +3,24 @@
 #' This package contains a function returns the lowest seven-day average discharge expected once every 10 years
 #' based on a continuous record of data.  The 7Q10 can reflect an annual, seasonal, or monthly
 #' statistic. Methods are consistent with the EPA's DFLOW methods.
-#' References:
-#' https://www.epa.gov/waterdata/dflow
-#' https://nepis.epa.gov/Exe/ZyPDF.cgi/30001JEH.PDF?Dockey=30001JEH.PD
-#' http://deq1.bse.vt.edu/sifnwiki/index.php/Multiple_ways_to_calculate_7Q10
-#' https://github.com/rmichie/DFLOW_R
-#' @param Station_ID Oregon Water Resources Divison (http://apps.wrd.state.or.us/apps/sw/hydro_near_real_time/) Station ID number
-#' @param start_date Start date, in the format of "mm/dd/yyyy", for the period of calculation
-#' @param end_date End date, in the format of "mm/dd/yyyy", for the period of calculation
-#' @param period The temporal scale for the 7Q10 calculation, can be "Annual" or "Custom". Default is "Annual"
-#' @param custom_start If "Custom" is designated as the period, the start date (excluding year) of the custom period in the character format of "mm-dd"
-#' @param custom_end If "Custom" is designated as the period, the end date (excluding year) of the custom period in the character format of "mm-dd"
-#' @param wy_start Only applicable for the "Annual" period. The water year beginning date (excluding year). The date should be in the character format of "mm-dd". If not specified the default is "10-01"
-#' @param method_type The method used to calculate 7Q10.  Options are "Distribution Free", "log Pearson Type III", or "Both"
 #'
+#' https://www.epa.gov/waterdata/dflow
+#'
+#' https://nepis.epa.gov/Exe/ZyPDF.cgi/30001JEH.PDF?Dockey=30001JEH.PD
+#'
+#' http://deq1.bse.vt.edu/sifnwiki/index.php/Multiple_ways_to_calculate_7Q10
+#'
+#' https://github.com/rmichie/DFLOW_R
+#'
+#' @param Station_ID Oregon Water Resources Divison (http://apps.wrd.state.or.us/apps/sw/hydro_near_real_time/) Station ID number
+#' @param start_date Start date, in the format of "mm/dd/yyyy", for the period of calculation. Make sure to include the quotations.
+#' @param end_date End date, in the format of "mm/dd/yyyy", for the period of calculation. Make sure to include the quotations.
+#' @param period The temporal scale for the 7Q10 calculation, can be "Annual" or "Custom". Default is "Annual". Make sure to include quotations.
+#' @param custom_start If "Custom" is designated as the period, the start date (excluding year) of the custom period in the character format of "mm-dd". Make sure to include quotations.
+#' @param custom_end If "Custom" is designated as the period, the end date (excluding year) of the custom period in the character format of "mm-dd". Make sure to include quotations.
+#' @param wy_start Only applicable for the "Annual" period. The water year beginning date (excluding year). The date should be in the character format of "mm-dd". If not specified the default is "10-01". Make sure to include quotations.
+#' @param method_type The method used to calculate 7Q10.  Options are "Distribution Free", "log Pearson Type III", or "Both". Make sure to include quotations.
+#' @importFrom magrittr "%>%"
 #' @keywords 7Q10
 #' @keywords Flow
 #' @keywords Oregon
@@ -233,7 +237,7 @@ Oregon7Q10 <- function(Station_ID, start_date, end_date, period = "Annual", cust
               obs.na.length$per_NAs <- obs.na.length$no_rows / obs.wy.length$no_rows
 
               # Getting final data frame and excluding water years with incomplete year coverage or >10% NAs for 7-day average flows
-              list(flow.df, subset(obs.wy.length, select = -no_rows), select(obs.na.length, select= -no_rows)) %>%
+              list(flow.df, subset(obs.wy.length, select = -no_rows), subset(obs.na.length, select= -no_rows)) %>%
                purrr::reduce(dplyr::left_join, by = "wy.year") %>%
                   subset(wy.ratio >= 1 & per_NAs <= 0.1) -> flow.df.final
 
