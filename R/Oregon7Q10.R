@@ -134,14 +134,14 @@ Oregon7Q10 <- function(Station_ID, start_date, end_date, period = "Annual", cust
                   custom_end.nm <- as.numeric(gsub("-", "", custom_end))
                   if (custom_start.nm > custom_end.nm) {
                     flow.df <- subset(flow.df, as.integer(paste0(format.Date(flow.df$record_date, "%m"),
-                                                                 format.Date(flow.df$record_date, "%d"))) >= as.integer(gsub("-", "", custom_start)) |
+                                                                 format.Date(flow.df$record_date, "%d"))) <= as.integer(gsub("-", "", custom_start)) |
                                                as.integer(paste0(format.Date(flow.df$record_date, "%m"),
-                                                                 format.Date(flow.df$record_date, "%d"))) <= as.integer(gsub("-", "", custom_end)))
+                                                                 format.Date(flow.df$record_date, "%d"))) >= as.integer(gsub("-", "", custom_end)))
                   } else {
                     flow.df <- subset(flow.df, as.integer(paste0(format.Date(flow.df$record_date, "%m"),
-                                                                 format.Date(flow.df$record_date, "%d"))) <= as.integer(gsub("-", "", custom_start)) &
+                                                                 format.Date(flow.df$record_date, "%d"))) >= as.integer(gsub("-", "", custom_start)) &
                                                as.integer(paste0(format.Date(flow.df$record_date, "%m"),
-                                                          format.Date(flow.df$record_date, "%d"))) >= as.integer(gsub("-", "", custom_end)))
+                                                          format.Date(flow.df$record_date, "%d"))) <= as.integer(gsub("-", "", custom_end)))
                   }
               }
 
