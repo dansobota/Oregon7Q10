@@ -157,7 +157,7 @@ Oregon7Q10 <- function(Station_ID, start_date, end_date, period = "Annual", cust
 
               if (period == "Custom" | period == "custom") {
                 flow.df$wy.year <- ifelse(as.integer(paste0(format.Date(flow.df$record_date, "%Y"))) >
-                                            as.integer(gsub("-", "", start_date)),
+                                            as.integer(gsub("-", "", custom_start)),
                                           as.integer(format.Date(flow.df$record_date, "%Y")),
                                           as.integer(format.Date(flow.df$record_date, "%Y")) - 1)
               }
@@ -211,11 +211,11 @@ Oregon7Q10 <- function(Station_ID, start_date, end_date, period = "Annual", cust
               if (period == "Annual" | period == "annual") {
                 wy.length <- 365
               } else {
-                if (as.integer(gsub("-", "", custom_start) > as.integer(gsub("-", "", custom_end)))) {
+                if (as.integer(gsub("-", "", custom_start)) > as.integer(gsub("-", "", custom_end))) {
                   # Using non-leap years 1998 and 1999 for intervals
-                    wy.length <- as.integer(as.Date(paste0(custom_end, "-1999"), format = "%m-%d-%Y") - as.Date(paste0(custom_start, "-1998"), format = "%m-%d-%Y"))
+                    wy.length <- as.integer(as.Date(paste0(custom_start, "-1999"), format = "%m-%d-%Y") - as.Date(paste0(custom_end, "-1998"), format = "%m-%d-%Y"))
                 } else {
-                   wy.length <- as.integer(as.Date(paste0(custom_start, "-1999"), format = "%m-%d-%Y") - as.Date(paste0(custom_end, "-1999"), format = "%m-%d-%Y"))
+                   wy.length <- as.integer(as.Date(paste0(custom_end, "-1999"), format = "%m-%d-%Y") - as.Date(paste0(custom_start, "-1999"), format = "%m-%d-%Y"))
                 }
               }
 
