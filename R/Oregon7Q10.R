@@ -27,8 +27,6 @@
 #' @export
 #' @examples Oregon7Q10(Station_ID, start_date, end_date, period = "Annual", custom_start = NA, custom_end = NA, wy_start = "10-01", method_type = "Both")
 
-# Load required packages----
-
 # Function to get 7Q10
 #' @export
 Oregon7Q10 <- function(Station_ID, start_date, end_date, period = "Annual", custom_start = NA, custom_end = NA, wy_start = "10-01", method_type = "Both") {
